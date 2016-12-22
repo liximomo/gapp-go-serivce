@@ -12,7 +12,7 @@ import (
 var seg jiebago.Segmenter
 
 func wordSegment(sentence string) []string {
-	var result []string
+	result := make([]string, 0)
 	useHmm := true
 	ch := seg.Cut(sentence, useHmm)
 	for word := range ch {
@@ -37,10 +37,18 @@ func init() {
 	http.HandleFunc("/ws", wordSegmentHandle)
 }
 
-func wordSegmentHandle(w http.ResponseWriter, r *http.Request) {
+func wordSegmentHandle(w http.ResponseWriter, req *http.Request) {
 	/* words := []int{1, 2, 3} */
-	words := wordSegment("他来到了网易杭研大厦")
+	query := req.URL.Query()
+	srcText, exist := query["text"]
+	if !exist {
+		srcText = []string{""}
+	}
+
+	words := wordSegment(srcText[0])
+
 	jsonString, err := json.Marshal(words)
+	log.Printf("words %v", jsonString)
 	if err != nil {
 		// log.Printf("transform to json fail %s", err)
 		jsonString = []byte("[]")
